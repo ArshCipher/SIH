@@ -11,7 +11,8 @@ class HealthDataService:
     """Service for managing health data and government database integration"""
     
     def __init__(self):
-        self.health_api_base_url = os.getenv("HEALTH_API_BASE_URL", "https://api.example-health.gov.in")
+        # Optional health API configuration - will use fallback data if not available
+        self.health_api_base_url = os.getenv("HEALTH_API_BASE_URL", "")
         self.health_api_key = os.getenv("HEALTH_API_KEY", "")
         
         # Cache for frequently accessed data
@@ -181,9 +182,11 @@ class HealthDataService:
             return None
     
     async def _fetch_disease_from_api(self, disease_name: str) -> Optional[Dict]:
-        """Fetch disease information from external health API"""
+        """Fetch disease information from external health API (optional)"""
         try:
-            if not self.health_api_key:
+            # Only try API if both URL and key are provided
+            if not self.health_api_base_url or not self.health_api_key:
+                logger.info("Health API credentials not configured, using fallback data")
                 return None
             
             headers = {
@@ -250,9 +253,11 @@ class HealthDataService:
             return []
     
     async def _fetch_vaccination_from_api(self, age_group: str) -> Optional[List[Dict]]:
-        """Fetch vaccination schedule from external API"""
+        """Fetch vaccination schedule from external API (optional)"""
         try:
-            if not self.health_api_key:
+            # Only try API if both URL and key are provided
+            if not self.health_api_base_url or not self.health_api_key:
+                logger.info("Health API credentials not configured, using fallback data")
                 return None
             
             headers = {

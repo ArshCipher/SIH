@@ -153,8 +153,8 @@ class AlertService:
         self.outbreak_check_interval = int(os.getenv("OUTBREAK_CHECK_INTERVAL", "3600"))
         self.vaccination_reminder_interval = int(os.getenv("VACCINATION_REMINDER_INTERVAL", "86400"))
         
-        # External health API endpoints
-        self.health_api_base_url = os.getenv("HEALTH_API_BASE_URL", "https://api.example-health.gov.in")
+        # External health API endpoints (optional - will use fallback if not available)
+        self.health_api_base_url = os.getenv("HEALTH_API_BASE_URL", "")
         self.health_api_key = os.getenv("HEALTH_API_KEY", "")
     
     async def get_outbreak_alerts(self, location: str = None) -> List[Dict]:
@@ -197,9 +197,11 @@ class AlertService:
             return []
     
     async def _fetch_outbreak_alerts_from_api(self, location: str = None) -> Optional[List[Dict]]:
-        """Fetch outbreak alerts from external health API"""
+        """Fetch outbreak alerts from external health API (optional)"""
         try:
-            if not self.health_api_key:
+            # Only try API if both URL and key are provided
+            if not self.health_api_base_url or not self.health_api_key:
+                logger.info("Health API credentials not configured, using fallback data")
                 return None
             
             headers = {

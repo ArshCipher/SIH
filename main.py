@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
@@ -113,7 +114,22 @@ chatbot = HealthChatbot(
 
 @app.get("/")
 async def root():
-    return {"message": "Public Health Chatbot API is running"}
+    return {"message": "Public Health Chatbot API is running - Visit /frontend for the chat interface"}
+
+@app.get("/frontend", response_class=HTMLResponse)
+async def chat_frontend():
+    """Serve the ChatGPT-like frontend interface"""
+    try:
+        with open("templates/chat.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(f.read())
+    except FileNotFoundError:
+        return HTMLResponse("""
+        <html><body>
+        <h1>Chat Frontend Not Found</h1>
+        <p>The chat.html template is missing. Please ensure templates/chat.html exists.</p>
+        <p><a href="/docs">Go to API Documentation</a></p>
+        </body></html>
+        """)
 
 @app.get("/health")
 async def health_check():

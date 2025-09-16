@@ -309,7 +309,54 @@ class HealthChatbot:
         # Extract disease name from entities
         diseases = [e["text"] for e in entities if e["label"] == "disease"]
         
-        if diseases:
+        # Define symptom to condition mapping
+        symptom_mapping = {
+            "headache": {
+                "possible_causes": ["tension headache", "migraine", "cluster headache", "dehydration", "stress", "eye strain"],
+                "advice": "Headaches can have various causes. Common ones include tension, dehydration, stress, or eye strain.",
+                "immediate_care": ["Rest in a quiet, dark room", "Apply cold or warm compress", "Stay hydrated", "Try gentle neck stretches"],
+                "when_to_see_doctor": ["Severe sudden headache", "Headache with fever and stiff neck", "Changes in vision", "Persistent headaches lasting days"]
+            },
+            "fever": {
+                "possible_causes": ["viral infection", "bacterial infection", "flu", "cold"],
+                "advice": "Fever is usually a sign that your body is fighting an infection.",
+                "immediate_care": ["Rest and stay hydrated", "Take fever reducers if needed", "Use cool compresses", "Monitor temperature"],
+                "when_to_see_doctor": ["Fever over 103°F (39.4°C)", "Persistent fever for more than 3 days", "Difficulty breathing", "Severe headache with fever"]
+            },
+            "cough": {
+                "possible_causes": ["viral infection", "allergies", "asthma", "acid reflux"],
+                "advice": "Coughs can be caused by infections, allergies, or other respiratory conditions.",
+                "immediate_care": ["Stay hydrated", "Use honey for throat relief", "Breathe humid air", "Avoid irritants"],
+                "when_to_see_doctor": ["Cough lasting more than 3 weeks", "Blood in cough", "Shortness of breath", "High fever with cough"]
+            }
+        }
+        
+        # Check if message contains specific symptoms
+        message_lower = message.lower()
+        found_symptom = None
+        for symptom in symptom_mapping.keys():
+            if symptom in message_lower:
+                found_symptom = symptom
+                break
+        
+        if found_symptom:
+            symptom_info = symptom_mapping[found_symptom]
+            response = f"**About {found_symptom.title()}:**\n\n"
+            response += f"**Possible causes:** {', '.join(symptom_info['possible_causes'])}\n\n"
+            response += f"**General advice:** {symptom_info['advice']}\n\n"
+            response += f"**Immediate care:**\n"
+            for care in symptom_info['immediate_care']:
+                response += f"• {care}\n"
+            response += f"\n**When to see a doctor:**\n"
+            for warning in symptom_info['when_to_see_doctor']:
+                response += f"• {warning}\n"
+            response += f"\n⚠️ **Disclaimer:** This is general information only. Consult a healthcare professional for proper diagnosis and treatment."
+            
+            return {
+                "response": response,
+                "suggested_actions": ["Consult a doctor if symptoms worsen", "Monitor symptoms closely", "Rest and stay hydrated"]
+            }
+        elif diseases:
             disease_info = await self.health_data_service.get_disease_info(diseases[0], language)
             return {
                 "response": f"Here's information about {diseases[0]} symptoms:\n\n{disease_info.get('symptoms', 'Symptoms not available')}",
@@ -317,8 +364,8 @@ class HealthChatbot:
             }
         else:
             return {
-                "response": "I can help you with information about disease symptoms. Could you please specify which disease you're asking about?",
-                "suggested_actions": ["Specify the disease name", "Describe your symptoms"]
+                "response": "I can help you with information about symptoms and health conditions. Try asking about specific symptoms like 'headache', 'fever', 'cough', or mention a specific disease you'd like to know about.",
+                "suggested_actions": ["Ask about specific symptoms", "Mention a disease name", "Describe your health concern"]
             }
     
     async def _handle_prevention_tips(self, message: str, entities: List[Dict], user_id: str, language: str) -> Dict:

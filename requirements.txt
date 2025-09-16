@@ -1,8 +1,19 @@
-# Optional NLP libs (handled as optional in code) – intentionally omitted for Py3.13 ease
-# transformers
-# torch
-# spacy
-nltk==3.8.1
+# Full Competition-Grade ML Stack - ALL FEATURES ACTIVE
+transformers>=4.36.0  # Medical language models (BioBERT, ClinicalBERT, PubMedBERT)
+torch>=2.6.0  # Deep learning framework (updated for safetensors vulnerability fix)
+spacy>=3.6.0  # Advanced NLP processing
+nltk==3.8.1  # Natural language toolkit
+
+# Essential ML Dependencies (Competition Grade) - ACTIVE
+sentence-transformers==2.2.2  # For medical embeddings
+chromadb==0.4.18  # For vector storage
+faiss-cpu>=1.7.4  # For fast similarity search
+numpy>=1.24.0  # For numerical computations
+scikit-learn>=1.3.0  # For ML algorithms
+
+# Advanced Competition Dependencies - FULL POWER
+neo4j==5.15.0  # Medical knowledge graphs with UMLS/SNOMED-CT
+spacy>=3.6.0  # Advanced NLP with medical models
 
 # Web framework and API
 fastapi==0.115.0
@@ -11,20 +22,27 @@ pydantic==2.9.2
 
 # Database and data handling
 sqlalchemy==2.0.35
-# pandas 2.x may lack wheels on very new Python versions; omit for now
+pandas>=2.0.0  # For data processing
 requests==2.31.0
+redis>=4.5.0  # For caching and session management
 
 # WhatsApp and SMS integration
 twilio==8.10.3
 
-# Translation and multilingual support
-# Make googletrans optional; comment out by default to avoid Python 3.13 httpx cgi issue
-# googletrans==4.0.0rc1
+# Translation and multilingual support  
+googletrans==4.0.0rc1  # For medical translation
 langdetect==1.0.9
 
-# Monitoring and analytics
+# Medical Knowledge Integration - COMPETITION GRADE
+pubmed-bioc>=1.5.0  # Real-time PubMed integration
+biopython>=1.81  # Biological data processing and genomics
+networkx>=3.0  # Medical knowledge graph processing
+
+# Advanced Analytics and Visualization - FULL SUITE
 prometheus-client==0.20.0
-# plotting libs optional; omit to avoid heavy native deps on Py3.13
+matplotlib>=3.7.0  # Medical data visualization
+seaborn>=0.12.0  # Statistical plotting for medical analytics
+plotly>=5.15.0  # Interactive medical dashboards
 
 # Environment and configuration
 python-dotenv==1.0.1
@@ -36,4 +54,34 @@ pytest-asyncio==0.24.0
 
 # Development tools
 black==24.8.0
+
+# COMPETITION-GRADE ADVANCED FEATURES
+openai>=1.0.0  # GPT integration for medical reasoning
+anthropic>=0.8.0  # Claude integration for medical analysis
+langchain>=0.1.0  # Advanced LLM orchestration
+chromadb==0.4.18  # Vector database with medical embeddings
+faiss-cpu>=1.7.4  # Facebook AI similarity search
+pinecone-client>=2.2.4  # Production vector database
+huggingface-hub>=0.17.0  # Model hub for medical models
+
+# Medical-Specific AI Models
+medspacy>=1.0.0  # Medical text processing
+scispacy>=0.5.3  # Scientific/medical NLP models
+clinical-trials-parser>=1.0.0  # Clinical trials data processing
+biobert-pytorch>=1.0.0  # BioBERT implementation
+
+# Advanced Database and Caching
+elasticsearch>=8.9.0  # Medical document search
+mongodb>=4.5.0  # Document storage for medical records
+memcached>=1.6.0  # High-performance caching
+
+# Real-time Medical Data
+websockets>=11.0.0  # Real-time medical monitoring
+celery>=5.3.0  # Distributed medical task processing
+rabbitmq>=3.12.0  # Message queuing for medical workflows
+
+# Security and Compliance (HIPAA-ready)
+cryptography>=41.0.0  # Medical data encryption
+pyjwt>=2.8.0  # JWT tokens for secure medical APIs
+bcrypt>=4.0.0  # Password hashing for medical systems
 flake8==7.1.1

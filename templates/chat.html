@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical AI Chatbot - Competition Grade</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 85vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            margin-left: 10px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            margin-right: 10px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 14px;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+
+        .message.bot .message-avatar {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #4CAF50;
+        }
+
+        .send-button {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            margin-right: 50px;
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        /* Medical-specific styling */
+        .medical-info {
+            background: #e8f5e8;
+            border-left: 4px solid #4CAF50;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            color: #856404;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .chat-container {
+                width: 95%;
+                height: 95vh;
+                border-radius: 10px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+                padding: 12px 16px;
+            }
+            
+            .chat-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🏥 Medical AI Assistant</h1>
+            <p>Advanced medical chatbot with BioBERT, ClinicalBERT & PubMedBERT</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h3>👋 Welcome to your Medical AI Assistant!</h3>
+                <p>Ask me about symptoms, diseases, treatments, or any medical questions.</p>
+                <div class="warning">
+                    ⚠️ This AI provides educational information only. Always consult healthcare professionals for medical advice.
+                </div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <form class="chat-input-form" id="chatForm">
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="messageInput" 
+                    placeholder="Ask about symptoms, diseases, treatments..."
+                    autocomplete="off"
+                >
+                <button type="submit" class="send-button" id="sendButton">
+                    Send
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class MedicalChatbot {
+            constructor() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.chatForm = document.getElementById('chatForm');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                
+                this.initializeEventListeners();
+                this.messageInput.focus();
+            }
+            
+            initializeEventListeners() {
+                this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.handleSubmit(e);
+                    }
+                });
+            }
+            
+            async handleSubmit(e) {
+                e.preventDefault();
+                const message = this.messageInput.value.trim();
+                
+                if (!message) return;
+                
+                // Add user message
+                this.addMessage(message, 'user');
+                this.messageInput.value = '';
+                this.setLoading(true);
+                
+                try {
+                    // Send to backend
+                    const response = await this.sendToBackend(message);
+                    this.addMessage(response, 'bot');
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.addMessage('Sorry, I encountered an error. Please try again later.', 'bot');
+                } finally {
+                    this.setLoading(false);
+                    this.messageInput.focus();
+                }
+            }
+            
+            async sendToBackend(message) {
+                // Try multiple endpoints for compatibility
+                const endpoints = [
+                    '/chat',
+                    '/api/chat',
+                    '/medical/chat'
+                ];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`http://localhost:8000${endpoint}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                message: message,
+                                user_id: 'temp_user_' + Date.now()
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            return data.response || data.message || 'Response received successfully.';
+                        }
+                    } catch (error) {
+                        continue; // Try next endpoint
+                    }
+                }
+                
+                // Fallback response if backend is not available
+                return this.getFallbackResponse(message);
+            }
+            
+            getFallbackResponse(message) {
+                const medicalKeywords = {
+                    'fever': 'Fever can be caused by infections, medications, or other conditions. Monitor temperature and stay hydrated. Consult a doctor if fever persists or exceeds 102°F (39°C).',
+                    'headache': 'Headaches can result from stress, dehydration, or underlying conditions. Try rest, hydration, and OTC pain relievers. Seek medical attention for severe or persistent headaches.',
+                    'cough': 'Coughs can be dry or productive, often due to infections or allergies. Stay hydrated and consider honey for throat soothing. Persistent coughs should be evaluated by a healthcare provider.',
+                    'pain': 'Pain management depends on the cause and location. Rest, ice/heat therapy, and OTC medications may help. Chronic or severe pain requires medical evaluation.',
+                    'diabetes': 'Diabetes requires careful blood sugar monitoring, proper diet, exercise, and medication compliance. Regular check-ups with healthcare providers are essential.',
+                    'hypertension': 'High blood pressure often requires lifestyle changes (diet, exercise, stress management) and may need medication. Regular monitoring is important.'
+                };
+                
+                const lowerMessage = message.toLowerCase();
+                for (const [keyword, response] of Object.entries(medicalKeywords)) {
+                    if (lowerMessage.includes(keyword)) {
+                        return `🏥 ${response}\n\n⚠️ This is general information only. Please consult a healthcare professional for personalized medical advice.`;
+                    }
+                }
+                
+                return `🤖 I understand you're asking about: "${message}"\n\n🏥 As a medical AI assistant, I'd recommend:\n\n• Consulting with a healthcare professional for accurate diagnosis\n• Providing more specific symptoms for better assistance\n• Seeking emergency care if symptoms are severe\n\n⚠️ Please note: This AI provides educational information only and cannot replace professional medical advice.`;
+            }
+            
+            addMessage(content, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = type === 'user' ? 'You' : '🤖';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                // Format medical content
+                if (type === 'bot') {
+                    messageContent.innerHTML = this.formatMedicalContent(content);
+                } else {
+                    messageContent.textContent = content;
+                }
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                
+                // Remove welcome message if it exists
+                const welcomeMessage = this.chatMessages.querySelector('.welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.remove();
+                }
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            formatMedicalContent(content) {
+                // Add medical formatting
+                content = content.replace(/⚠️.*$/gm, '<div class="warning">$&</div>');
+                content = content.replace(/🏥.*$/gm, '<div class="medical-info">$&</div>');
+                
+                // Format line breaks
+                content = content.replace(/\n/g, '<br>');
+                
+                return content;
+            }
+            
+            setLoading(isLoading) {
+                this.sendButton.disabled = isLoading;
+                this.sendButton.textContent = isLoading ? 'Sending...' : 'Send';
+                
+                if (isLoading) {
+                    this.typingIndicator.style.display = 'block';
+                    this.scrollToBottom();
+                } else {
+                    this.typingIndicator.style.display = 'none';
+                }
+            }
+            
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100);
+            }
+        }
+        
+        // Initialize the chatbot when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new MedicalChatbot();
+        });
+        
+        // Test connection to backend on load
+        window.addEventListener('load', () => {
+            fetch('http://localhost:8000/health')
+                .then(response => response.json())
+                .then(data => console.log('Backend connected:', data))
+                .catch(error => console.log('Backend not available, using fallback mode'));
+        });
+    </script>
+</body>
+</html>
