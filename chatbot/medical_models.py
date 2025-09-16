@@ -856,40 +856,50 @@ class MedicalModelEnsemble:
 
     def _get_diabetes_information(self) -> str:
         """Comprehensive diabetes information"""
-        return """**Type 1 vs Type 2 Diabetes - Comprehensive Guide:**
+        return """**How to Know if You Have Diabetes - Signs & Testing:**
 
-**Type 1 Diabetes:**
-• **Cause:** Autoimmune condition - body's immune system attacks insulin-producing beta cells
-• **Age of onset:** Usually childhood/adolescence, but can occur at any age
-• **Insulin production:** Little to no insulin produced by pancreas
-• **Treatment:** Daily insulin therapy (injections or pump) is essential for survival
-• **Risk factors:** Genetic predisposition, family history, environmental triggers
-• **Prevalence:** 5-10% of all diabetes cases
-• **Onset:** Usually rapid, symptoms develop quickly
+**Common Symptoms (Warning Signs):**
+• **Excessive thirst** - feeling thirsty all the time
+• **Frequent urination** - especially at night
+• **Unexplained weight loss** - losing weight without trying
+• **Extreme fatigue** - feeling tired all the time
+• **Blurred vision** - difficulty seeing clearly
+• **Slow healing** - cuts and wounds take longer to heal
+• **Frequent infections** - skin, gum, or bladder infections
+• **Tingling/numbness** - in hands or feet
 
-**Type 2 Diabetes:**
-• **Cause:** Insulin resistance - body doesn't use insulin effectively, eventually pancreas can't keep up
-• **Age of onset:** Usually adults 40+, but increasingly seen in younger people due to obesity
-• **Insulin production:** Pancreas may produce some insulin, but body doesn't respond properly
-• **Treatment:** Lifestyle changes, oral medications, may progress to insulin therapy
-• **Risk factors:** Obesity, sedentary lifestyle, family history, age, ethnicity
-• **Prevalence:** 90-95% of all diabetes cases
-• **Onset:** Usually gradual, may go undiagnosed for years
+**Medical Tests to Diagnose Diabetes:**
+• **Fasting Blood Sugar:** 126 mg/dL or higher (after 8+ hours of fasting)
+• **Random Blood Sugar:** 200 mg/dL or higher with symptoms
+• **A1C Test:** 6.5% or higher (measures average blood sugar over 2-3 months)
+• **Oral Glucose Tolerance Test:** 200 mg/dL or higher after 2 hours
 
-**Shared Characteristics:**
-• **Target blood sugar:** 80-130 mg/dL before meals, <180 mg/dL after meals
-• **HbA1c goal:** Generally <7% for most adults
-• **Monitoring:** Regular blood glucose testing essential
-• **Complications:** Both can lead to heart disease, stroke, kidney disease, eye problems, nerve damage
+**Normal vs Pre-diabetes vs Diabetes:**
+• **Normal:** Fasting <100, A1C <5.7%
+• **Pre-diabetes:** Fasting 100-125, A1C 5.7-6.4%
+• **Diabetes:** Fasting ≥126, A1C ≥6.5%
 
-**Management Strategies:**
-• **Diet:** Carbohydrate counting, balanced nutrition
-• **Exercise:** Regular physical activity improves insulin sensitivity
-• **Medication compliance:** Take medications as prescribed
-• **Regular check-ups:** Monitor for complications
-• **Blood pressure/cholesterol control:** Often needed alongside diabetes management
+**Type 1 vs Type 2 Differences:**
+• **Type 1:** Usually starts young, rapid onset, requires insulin immediately
+• **Type 2:** Usually starts after 40, gradual onset, may be managed with pills initially
 
-**Emergency situations:** Know signs of very high (hyperglycemia) or low (hypoglycemia) blood sugar"""
+**Risk Factors for Type 2:**
+• Age 45+, family history, overweight, inactive lifestyle
+• High blood pressure, abnormal cholesterol levels
+• History of gestational diabetes, PCOS
+
+**When to Get Tested:**
+• If you have any symptoms above
+• Every 3 years if you're 45+ or have risk factors
+• Immediately if you have severe symptoms
+
+**What to Do if You Suspect Diabetes:**
+1. **See a doctor immediately** for proper testing
+2. **Don't wait** - early treatment prevents complications
+3. **Track symptoms** - when they started, how severe
+4. **Bring medication list** to your appointment
+
+**Important:** Only a healthcare provider can properly diagnose diabetes through blood tests. Home glucose meters are not accurate enough for diagnosis."""
     
     def _get_hypertension_information(self) -> str:
         """Comprehensive hypertension information"""

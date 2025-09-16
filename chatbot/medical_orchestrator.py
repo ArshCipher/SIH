@@ -180,59 +180,28 @@ class SafetyAgent(MedicalAgent):
         super().__init__("safety_agent", AgentRole.SAFETY)
     
     async def process_query(self, query: str, context: Dict[str, Any]) -> AgentResponse:
-        """Process safety validation for advanced medical queries"""
+        """Process safety validation - very permissive for rural healthcare access"""
         query_lower = query.lower()
         
-        # Check for emergency keywords
-        emergency_keywords = ["chest pain", "heart attack", "stroke", "can't breathe", "unconscious", "severe bleeding", "poisoning"]
-        if any(keyword in query_lower for keyword in emergency_keywords):
+        # Only block explicit self-harm (extremely minimal restrictions)
+        if any(phrase in query_lower for phrase in ["kill myself", "suicide", "end my life", "hurt myself on purpose"]):
             return AgentResponse(
                 agent_id=self.agent_id,
                 agent_role=self.role,
-                response_text="⚠️ This query mentions symptoms that could indicate a medical emergency. Seek immediate medical attention.",
+                response_text="Please contact emergency services or a mental health professional immediately.",
                 confidence=0.95,
-                reasoning="Emergency symptoms detected",
+                reasoning="Self-harm content detected",
                 medical_entities=[],
                 severity_assessment=SeverityLevel.CRITICAL
             )
         
-        # Advanced medical topics that should be allowed
-        advanced_medical_topics = [
-            "molecular", "cellular", "genetic", "biochemical", "pathophysiology",
-            "pharmacology", "immunology", "oncology", "cardiology", "neurology",
-            "clinical trial", "meta-analysis", "biomarker", "precision medicine",
-            "treatment", "therapy", "diagnosis", "mechanism", "pathway", "research"
-        ]
-        
-        # Educational and research queries (safe to provide comprehensive information)
-        educational_keywords = [
-            "what is", "difference between", "explain", "how does", "what are", 
-            "tell me about", "describe", "mechanism of", "types of", "clinical",
-            "medical", "study", "evidence", "guidelines", "latest", "advanced"
-        ]
-        
-        is_educational = any(keyword in query_lower for keyword in educational_keywords)
-        is_advanced_medical = any(topic in query_lower for topic in advanced_medical_topics)
-        
-        # Allow advanced medical queries with comprehensive responses
-        if is_educational or is_advanced_medical:
-            return AgentResponse(
-                agent_id=self.agent_id,
-                agent_role=self.role,
-                response_text="Advanced medical/educational query detected - comprehensive information approved",
-                confidence=0.95,
-                reasoning="Educational or advanced medical topic - safe for detailed analysis",
-                medical_entities=[],
-                severity_assessment=SeverityLevel.LOW
-            )
-        
-        # General medical queries (still safe with disclaimer)
+        # Allow ALL medical queries - this AI is designed for medical information
         return AgentResponse(
             agent_id=self.agent_id,
             agent_role=self.role,
-            response_text="General medical query - comprehensive analysis approved",
-            confidence=0.9,
-            reasoning="Standard medical query - models designed for medical analysis",
+            response_text="Medical query approved - providing comprehensive medical information",
+            confidence=0.95,
+            reasoning="Medical AI designed for healthcare information access",
             medical_entities=[],
             severity_assessment=SeverityLevel.LOW
         )
@@ -286,8 +255,8 @@ class MedicalOrchestrator:
         # Initialize medical ensemble
         self.medical_ensemble = medical_ensemble  # Use the global instance
         
-        self.consensus_threshold = 0.80
-        self.safety_threshold = 0.95
+        self.consensus_threshold = 0.50  # Lowered from 0.80 to be less restrictive
+        self.safety_threshold = 0.70     # Lowered from 0.95 to be less restrictive
         
         # Medical disclaimers
         self.medical_disclaimer = """
@@ -355,38 +324,28 @@ Always seek the advice of qualified healthcare providers with questions about me
             # Get comprehensive medical information for complex queries
             comprehensive_analysis = ""
             
-            # Use the enhanced medical information based on query content
+            # Use the enhanced medical models to generate contextual responses based on the actual query
             query_lower = query.lower()
-            if any(keyword in query_lower for keyword in ["diabetes", "insulin", "glucose", "blood sugar"]):
-                comprehensive_analysis = self.medical_ensemble._get_diabetes_information()
+            
+            # Analyze the query to understand what specific information is being requested
+            query_intent = self._analyze_query_intent(query, biobert_result, clinical_result, pubmed_result)
+            
+            # Generate contextual response based on medical models and query intent
+            if any(keyword in query_lower for keyword in ["diabetes", "diabetic", "diabeties", "insulin", "glucose", "blood sugar"]):
+                comprehensive_analysis = self._generate_diabetes_response(query, query_intent, biobert_result, clinical_result, pubmed_result)
             elif any(keyword in query_lower for keyword in ["cancer", "oncogenic", "tumor", "malignancy", "carcinoma", "adenocarcinoma"]):
-                comprehensive_analysis = self.medical_ensemble._get_cancer_information()
-            elif any(keyword in query_lower for keyword in ["hypertension", "blood pressure", "ace inhibitor"]):
-                comprehensive_analysis = self.medical_ensemble._get_hypertension_information()
-            elif any(keyword in query_lower for keyword in ["heart", "cardiac", "cardio", "heart failure"]):
-                comprehensive_analysis = self.medical_ensemble._get_heart_disease_information()
-            elif any(keyword in query_lower for keyword in ["car-t", "cart", "immunotherapy", "hematologic"]):
-                comprehensive_analysis = self.medical_ensemble._get_cancer_information()  # CAR-T is cancer treatment
+                comprehensive_analysis = self._generate_cancer_response(query, query_intent, biobert_result, clinical_result, pubmed_result)
+            elif any(keyword in query_lower for keyword in ["hypertension", "blood pressure", "ace inhibitor", "high pressure", "bp", "systolic", "diastolic"]):
+                comprehensive_analysis = self._generate_hypertension_response(query, query_intent, biobert_result, clinical_result, pubmed_result)
+            elif any(keyword in query_lower for keyword in ["heart", "cardiac", "cardio", "heart failure", "coronary", "angina", "myocardial"]):
+                comprehensive_analysis = self._generate_heart_response(query, query_intent, biobert_result, clinical_result, pubmed_result)
+            elif any(keyword in query_lower for keyword in ["car-t", "cart", "immunotherapy", "hematologic", "leukemia", "lymphoma"]):
+                comprehensive_analysis = self._generate_cancer_response(query, query_intent, biobert_result, clinical_result, pubmed_result)
+            elif any(keyword in query_lower for keyword in ["fever", "rash", "spots", "pain", "chest pain", "shortness of breath", "emergency", "urgent", "bleeding", "severe"]):
+                comprehensive_analysis = self._generate_symptom_response(query, query_intent, biobert_result, clinical_result, pubmed_result)
             else:
-                # For other medical queries, use a general medical analysis
-                comprehensive_analysis = f"""
-**Medical Analysis of: {query}**
-
-This query requires specialized medical knowledge. Our AI system has analyzed this using multiple medical models including BioBERT, ClinicalBERT, and PubMedBERT.
-
-**Model Analysis Results:**
-- BioBERT Classification: {biobert_result.prediction} (Confidence: {biobert_result.confidence:.2f})
-- ClinicalBERT Analysis: {clinical_result.prediction} (Confidence: {clinical_result.confidence:.2f})  
-- PubMedBERT Research: {pubmed_result.prediction} (Confidence: {pubmed_result.confidence:.2f})
-
-**Medical Entities Identified:**
-{', '.join([entity.get('text', 'Unknown') for entity in biobert_result.entities + clinical_result.entities]) if biobert_result.entities or clinical_result.entities else 'No specific medical entities identified'}
-
-**Comprehensive Medical Information:**
-This appears to be a complex medical query that would benefit from consultation with healthcare professionals who can provide detailed, personalized medical advice based on individual circumstances and current medical literature.
-
-For the most accurate and up-to-date information on this medical topic, please consult with qualified healthcare providers who can assess your specific situation and provide appropriate medical guidance.
-"""
+                # For other medical queries, generate intelligent response based on model analysis
+                comprehensive_analysis = self._generate_general_medical_response(query, query_intent, biobert_result, clinical_result, pubmed_result)
             
             # Step 3: Run parallel agent processing for consensus
             agent_tasks = []
@@ -514,3 +473,416 @@ For the most accurate and up-to-date information on this medical topic, please c
             medical_disclaimer=self.medical_disclaimer,
             session_id=session_id
         )
+
+    def _analyze_query_intent(self, query: str, biobert_result, clinical_result, pubmed_result) -> str:
+        """Analyze the query to understand what specific information is being requested"""
+        query_lower = query.lower()
+        
+        # Determine the type of medical information requested
+        if any(word in query_lower for word in ["how", "know", "tell", "check", "detect", "identify", "symptoms", "signs"]):
+            return "diagnostic_info"
+        elif any(word in query_lower for word in ["what is", "define", "explain", "describe", "meaning"]):
+            return "definition_info"
+        elif any(word in query_lower for word in ["treat", "treatment", "cure", "therapy", "medicine", "medication"]):
+            return "treatment_info"
+        elif any(word in query_lower for word in ["prevent", "avoid", "stop", "reduce risk"]):
+            return "prevention_info"
+        elif any(word in query_lower for word in ["cause", "why", "reason", "mechanism", "pathophysiology"]):
+            return "causation_info"
+        elif any(word in query_lower for word in ["complication", "risk", "danger", "outcome"]):
+            return "risk_info"
+        else:
+            return "general_info"
+
+    def _generate_diabetes_response(self, query: str, intent: str, biobert_result, clinical_result, pubmed_result) -> str:
+        """Generate contextual diabetes response based on query intent"""
+        
+        base_info = f"""**Medical AI Analysis for: "{query}"**
+
+**Model Analysis:**
+• BioBERT: {biobert_result.prediction} (Confidence: {biobert_result.confidence:.2f})
+• ClinicalBERT: {clinical_result.prediction} (Confidence: {clinical_result.confidence:.2f})
+• PubMedBERT: {pubmed_result.prediction} (Confidence: {pubmed_result.confidence:.2f})
+
+"""
+        
+        if intent == "diagnostic_info":
+            return base_info + """**How to Know if You Have Diabetes:**
+
+**Common Warning Signs:**
+• Excessive thirst and frequent urination
+• Unexplained weight loss or gain
+• Extreme fatigue and weakness
+• Blurred vision
+• Slow-healing cuts and wounds
+• Frequent infections
+• Tingling or numbness in hands/feet
+
+**Medical Tests:**
+• Fasting blood glucose: ≥126 mg/dL indicates diabetes
+• Random blood glucose: ≥200 mg/dL with symptoms
+• A1C test: ≥6.5% indicates diabetes
+• Oral glucose tolerance test: ≥200 mg/dL after 2 hours
+
+**Next Steps:**
+See a healthcare provider for proper blood testing if you have these symptoms."""
+
+        elif intent == "treatment_info":
+            return base_info + """**Diabetes Treatment Options:**
+
+**Type 1 Diabetes:**
+• Insulin therapy (essential for survival)
+• Continuous glucose monitoring
+• Carbohydrate counting
+• Regular blood glucose testing
+
+**Type 2 Diabetes:**
+• Lifestyle changes (diet, exercise)
+• Oral medications (metformin, etc.)
+• Injectable medications (GLP-1 agonists)
+• Insulin if needed
+• Blood pressure/cholesterol management
+
+**Lifestyle Management:**
+• Healthy diet with controlled carbohydrates
+• Regular physical activity
+• Weight management
+• Stress reduction
+• Regular medical check-ups"""
+
+        elif intent == "prevention_info":
+            return base_info + """**Diabetes Prevention:**
+
+**Type 2 Diabetes Prevention:**
+• Maintain healthy weight
+• Eat balanced diet with limited processed foods
+• Exercise regularly (150 minutes/week)
+• Don't smoke
+• Limit alcohol consumption
+• Manage stress levels
+• Get regular health screenings
+
+**High-Risk Individuals:**
+• Family history of diabetes
+• Age 45+
+• Overweight/obese
+• High blood pressure
+• Previous gestational diabetes
+
+**Type 1 Prevention:**
+Currently no known prevention methods (autoimmune condition)"""
+
+        elif intent == "causation_info":
+            return base_info + """**What Causes Diabetes:**
+
+**Type 1 Diabetes:**
+• Autoimmune attack on insulin-producing cells
+• Genetic factors (inherited susceptibility)
+• Environmental triggers (viruses, stress)
+• Not caused by diet or lifestyle
+
+**Type 2 Diabetes:**
+• Insulin resistance develops over time
+• Pancreas can't produce enough insulin
+• Risk factors: obesity, inactivity, genetics, age
+• Often preventable with lifestyle changes
+
+**Gestational Diabetes:**
+• Hormonal changes during pregnancy
+• Usually resolves after delivery
+• Increases risk of Type 2 later"""
+
+        else:
+            return base_info + """**General Diabetes Information:**
+
+**Types of Diabetes:**
+• Type 1: Autoimmune, requires insulin
+• Type 2: Insulin resistance, most common
+• Gestational: During pregnancy
+
+**Key Facts:**
+• Affects how your body processes blood sugar
+• Can lead to serious complications if uncontrolled
+• Manageable with proper treatment
+• Regular monitoring essential
+
+**Important:** Consult healthcare providers for personalized advice and treatment plans."""
+
+    def _generate_cancer_response(self, query: str, intent: str, biobert_result, clinical_result, pubmed_result) -> str:
+        """Generate contextual cancer response based on query intent"""
+        
+        base_info = f"""**Medical AI Analysis for: "{query}"**
+
+**Model Analysis:**
+• BioBERT: {biobert_result.prediction} (Confidence: {biobert_result.confidence:.2f})
+• ClinicalBERT: {clinical_result.prediction} (Confidence: {clinical_result.confidence:.2f})
+• PubMedBERT: {pubmed_result.prediction} (Confidence: {pubmed_result.confidence:.2f})
+
+"""
+        
+        if intent == "diagnostic_info":
+            return base_info + """**Cancer Warning Signs (CAUTION):**
+• **C**hange in bowel or bladder habits
+• **A** sore that does not heal
+• **U**nusual bleeding or discharge
+• **T**hickening or lump in breast or elsewhere
+• **I**ndigestion or difficulty swallowing
+• **O**bvious change in wart or mole
+• **N**agging cough or hoarseness
+
+**When to See a Doctor:**
+• Any persistent, unexplained symptoms
+• Lumps or masses anywhere on body
+• Unexplained weight loss
+• Persistent fatigue
+• Changes in skin moles"""
+
+        elif intent == "treatment_info":
+            return base_info + """**Cancer Treatment Options:**
+
+**Common Treatments:**
+• Surgery to remove tumors
+• Chemotherapy (drug treatment)
+• Radiation therapy
+• Immunotherapy
+• Targeted therapy
+• Hormone therapy
+• Stem cell transplant
+
+**Treatment Planning:**
+• Depends on cancer type and stage
+• Multi-disciplinary team approach
+• Personalized treatment plans
+• Consider clinical trials"""
+
+        elif intent == "prevention_info":
+            return base_info + """**Cancer Prevention:**
+
+**Lifestyle Factors:**
+• Don't smoke or use tobacco
+• Limit alcohol consumption
+• Maintain healthy weight
+• Stay physically active
+• Eat healthy diet with fruits/vegetables
+• Protect skin from sun exposure
+
+**Screening Tests:**
+• Regular mammograms, colonoscopies
+• Pap smears, skin checks
+• Follow screening guidelines for your age"""
+
+        else:
+            return base_info + """**General Cancer Information:**
+
+Cancer is a group of diseases involving abnormal cell growth that can spread to other parts of the body.
+
+**Key Points:**
+• Over 100 different types
+• Early detection improves outcomes
+• Treatment success rates improving
+• Support resources available
+
+**Important:** Any concerning symptoms should be evaluated by healthcare professionals immediately."""
+
+    def _generate_hypertension_response(self, query: str, intent: str, biobert_result, clinical_result, pubmed_result) -> str:
+        """Generate contextual hypertension response based on query intent"""
+        
+        base_info = f"""**Medical AI Analysis for: "{query}"**
+
+**Model Analysis:**
+• BioBERT: {biobert_result.prediction} (Confidence: {biobert_result.confidence:.2f})
+• ClinicalBERT: {clinical_result.prediction} (Confidence: {clinical_result.confidence:.2f})
+• PubMedBERT: {pubmed_result.prediction} (Confidence: {pubmed_result.confidence:.2f})
+
+"""
+        
+        if intent == "diagnostic_info":
+            return base_info + """**Blood Pressure Categories:**
+• **Normal:** Less than 120/80 mmHg
+• **Elevated:** 120-129 systolic, <80 diastolic
+• **Stage 1:** 130-139 systolic OR 80-89 diastolic
+• **Stage 2:** 140/90 mmHg or higher
+• **Crisis:** Higher than 180/120 mmHg (emergency)
+
+**Symptoms:**
+• Often called "silent killer" - usually no symptoms
+• Severe cases: headaches, shortness of breath, nosebleeds
+• Regular monitoring essential"""
+
+        elif intent == "treatment_info":
+            return base_info + """**Hypertension Treatment:**
+
+**Lifestyle Changes:**
+• Low-sodium diet (DASH diet)
+• Regular exercise
+• Weight management
+• Limit alcohol
+• Quit smoking
+• Stress management
+
+**Medications:**
+• ACE inhibitors
+• Calcium channel blockers
+• Diuretics
+• Beta-blockers
+• ARBs (Angiotensin receptor blockers)"""
+
+        elif intent == "prevention_info":
+            return base_info + """**Preventing High Blood Pressure:**
+
+**Healthy Habits:**
+• Maintain healthy weight
+• Exercise regularly
+• Eat low-sodium, high-potassium foods
+• Limit alcohol
+• Don't smoke
+• Manage stress
+• Get adequate sleep
+• Regular blood pressure checks"""
+
+        else:
+            return base_info + """**High Blood Pressure Information:**
+
+Hypertension is when blood pressure is consistently elevated, putting extra strain on arteries and organs.
+
+**Key Facts:**
+• Often no symptoms until advanced
+• Major risk factor for heart disease, stroke
+• Very treatable with lifestyle and medication
+• Regular monitoring important"""
+
+    def _generate_heart_response(self, query: str, intent: str, biobert_result, clinical_result, pubmed_result) -> str:
+        """Generate contextual heart disease response based on query intent"""
+        
+        base_info = f"""**Medical AI Analysis for: "{query}"**
+
+**Model Analysis:**
+• BioBERT: {biobert_result.prediction} (Confidence: {biobert_result.confidence:.2f})
+• ClinicalBERT: {clinical_result.prediction} (Confidence: {clinical_result.confidence:.2f})
+• PubMedBERT: {pubmed_result.prediction} (Confidence: {pubmed_result.confidence:.2f})
+
+"""
+        
+        if intent == "diagnostic_info":
+            return base_info + """**Heart Disease Warning Signs:**
+• Chest pain or pressure
+• Shortness of breath
+• Pain in arms, neck, jaw, back
+• Fatigue, weakness
+• Irregular heartbeat
+• Swelling in legs, ankles, feet
+• Nausea, lightheadedness
+
+**Emergency Signs (Call 911):**
+• Severe chest pain
+• Difficulty breathing
+• Loss of consciousness
+• Signs of stroke"""
+
+        elif intent == "treatment_info":
+            return base_info + """**Heart Disease Treatment:**
+
+**Medications:**
+• Blood thinners
+• ACE inhibitors
+• Beta-blockers
+• Statins for cholesterol
+• Diuretics
+
+**Procedures:**
+• Angioplasty and stents
+• Bypass surgery
+• Pacemaker/defibrillator
+• Heart transplant (severe cases)
+
+**Lifestyle:**
+• Heart-healthy diet
+• Regular exercise
+• Smoking cessation
+• Stress management"""
+
+        else:
+            return base_info + """**Heart Disease Information:**
+
+Heart disease includes various conditions affecting the heart and blood vessels.
+
+**Common Types:**
+• Coronary artery disease
+• Heart failure
+• Arrhythmias
+• Valvular disease
+
+**Risk Factors:**
+• High blood pressure
+• High cholesterol
+• Diabetes
+• Smoking
+• Family history"""
+
+    def _generate_symptom_response(self, query: str, intent: str, biobert_result, clinical_result, pubmed_result) -> str:
+        """Generate contextual symptom response"""
+        
+        return f"""**Medical AI Analysis for: "{query}"**
+
+**Model Analysis:**
+• BioBERT: {biobert_result.prediction} (Confidence: {biobert_result.confidence:.2f})
+• ClinicalBERT: {clinical_result.prediction} (Confidence: {clinical_result.confidence:.2f})
+• PubMedBERT: {pubmed_result.prediction} (Confidence: {pubmed_result.confidence:.2f})
+
+**⚠️ SYMPTOM GUIDANCE:**
+
+**When to Seek IMMEDIATE Care:**
+• Chest pain or pressure
+• Difficulty breathing
+• Severe bleeding
+• Loss of consciousness
+• Signs of stroke (FAST)
+• Severe allergic reactions
+
+**When to Contact Doctor TODAY:**
+• Persistent fever over 101°F
+• Severe pain
+• Unusual or concerning symptoms
+• Medication side effects
+
+**General Symptom Management:**
+• Document when symptoms started
+• Note triggers or patterns
+• Track severity (1-10 scale)
+• List current medications
+• Monitor for changes
+
+**Important:** This AI cannot diagnose conditions. Professional medical evaluation is essential for proper diagnosis."""
+
+    def _generate_general_medical_response(self, query: str, intent: str, biobert_result, clinical_result, pubmed_result) -> str:
+        """Generate intelligent general medical response"""
+        
+        return f"""**Medical AI Analysis for: "{query}"**
+
+**Advanced Model Analysis:**
+• BioBERT Medical Classification: {biobert_result.prediction} (Confidence: {biobert_result.confidence:.2f})
+• ClinicalBERT Clinical Analysis: {clinical_result.prediction} (Confidence: {clinical_result.confidence:.2f})
+• PubMedBERT Research Analysis: {pubmed_result.prediction} (Confidence: {pubmed_result.confidence:.2f})
+
+**Medical Information:**
+Based on your query, our medical AI has analyzed the content using state-of-the-art medical language models trained on clinical literature.
+
+**General Health Guidance:**
+• Consult healthcare providers for personalized medical advice
+• Regular check-ups help with early detection and prevention
+• Maintain healthy lifestyle: balanced diet, exercise, adequate sleep
+• Keep track of medications and medical history
+• Don't hesitate to seek medical attention for concerning symptoms
+
+**Emergency Situations:**
+• Call 911 for severe symptoms: chest pain, difficulty breathing, severe bleeding
+• Contact your doctor for persistent or worsening symptoms
+• Use telemedicine for non-urgent questions
+
+**Rural Healthcare Resources:**
+• Mobile health clinics may serve your area
+• Telemedicine connects you with doctors remotely
+• Community health workers provide local support
+• Emergency services available for urgent situations
+
+This medical AI provides educational information to support informed healthcare decisions."""
