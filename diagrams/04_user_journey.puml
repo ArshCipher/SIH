@@ -1,0 +1,46 @@
+@startuml User_Journey_Flow
+!theme vibrant
+title Rural User Journey - Medical AI Interaction
+
+actor "Rural User" as USER
+participant "WhatsApp" as WA
+participant "Medical AI System" as AI
+participant "Emergency Services" as EMERGENCY
+participant "Local PHC" as PHC
+participant "Family" as FAMILY
+
+USER -> WA : Sends voice message\n"मुझे तेज़ बुखार है" (High fever)
+activate WA
+
+WA -> AI : Audio + Text Message
+activate AI
+
+AI -> AI : Language Detection (Hindi)
+AI -> AI : Medical Entity Extraction
+AI -> AI : Multi-Agent Analysis
+AI -> AI : Safety Validation
+
+alt Emergency Detected
+    AI -> EMERGENCY : Auto-route to 108
+    AI -> FAMILY : Send alert with location
+    AI -> PHC : Notify nearest facility
+    AI -> USER : Emergency guidance
+    note right: Critical path < 30 seconds
+else Normal Consultation
+    AI -> AI : Generate medical guidance
+    AI -> USER : Detailed response in Hindi
+    note right: Response < 3 seconds
+end
+
+AI -> AI : Log interaction for learning
+deactivate AI
+
+USER -> WA : Follow-up question
+WA -> AI : Continued conversation
+AI -> USER : Contextual response
+
+note over USER, AI : Continuous monitoring\nand improvement
+
+deactivate WA
+
+@enduml

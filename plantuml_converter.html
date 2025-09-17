@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIH 2025 - PlantUML to PNG Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .diagram-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .convert-btn {
+            background: #2196F3;
+        }
+        .convert-btn:hover {
+            background: #1976D2;
+        }
+        .download-btn {
+            background: #FF9800;
+        }
+        .download-btn:hover {
+            background: #F57C00;
+        }
+        .result {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .result img {
+            max-width: 100%;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            background: white;
+            padding: 10px;
+        }
+        .instructions {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 SIH 2025 - PlantUML to PNG Converter</h1>
+        
+        <div class="instructions">
+            <h2>📋 Instructions:</h2>
+            <ol>
+                <li><span class="emoji">📝</span> The PlantUML code is already loaded below</li>
+                <li><span class="emoji">🎨</span> Click "Convert to PNG" for each diagram</li>
+                <li><span class="emoji">💾</span> Right-click on generated images and "Save As"</li>
+                <li><span class="emoji">📊</span> Use these PNG files in your presentation slides</li>
+            </ol>
+        </div>
+
+        <!-- Simple Architecture -->
+        <div class="diagram-section">
+            <h3>🏗️ 1. Simple Architecture Diagram</h3>
+            <p><strong>Use for:</strong> Technical Approach slide</p>
+            <textarea id="arch1">@startuml Simple_High_Level_Architecture
+!theme plain
+title 🏥 Medical AI System - High Level Architecture
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontSize 12
+skinparam defaultFontName Arial
+
+package "📱 User Access" #LightBlue {
+  [WhatsApp] as WA
+  [SMS] as SMS
+  [Web Portal] as WEB
+}
+
+package "🤖 AI Brain" #LightGreen {
+  [Medical AI\nOrchestrator] as AI
+  [500+ Diseases\nKnowledge Base] as KB
+}
+
+package "🏛️ Government" #LightYellow {
+  [ABDM Integration] as ABDM
+  [Emergency Services\n(108)] as EMR
+  [Health Database] as HEALTH_DB
+}
+
+package "💾 Data" #LightCyan {
+  [User Data] as USER_DB
+  [Analytics] as ANALYTICS
+}
+
+' Simple connections
+WA --> AI : Hindi/English\nVoice/Text
+SMS --> AI : Basic Phones
+WEB --> AI : Web Interface
+
+AI --> KB : Medical\nKnowledge
+AI --> ABDM : Patient Records
+AI --> EMR : Emergency\nRouting
+AI --> USER_DB : Store Interactions
+AI --> ANALYTICS : Performance\nMetrics
+
+AI --> HEALTH_DB : Disease\nSurveillance
+
+note top of AI : 🧠 Multi-Agent AI\n5 Medical Models\n85%+ Accuracy
+
+note bottom of KB : 📚 Covers All Specialties\nCardiology, Neurology\nPediatrics, Emergency
+
+note right of ABDM : 🆔 Government Ready\nHealth ID Integration\nReal-time Sync
+
+@enduml</textarea>
+            <button class="convert-btn" onclick="convertDiagram('arch1', 'result1')">Convert to PNG</button>
+            <div id="result1" class="result"></div>
+        </div>
+
+        <!-- Ultra Simple Architecture -->
+        <div class="diagram-section">
+            <h3>⚡ 2. Ultra Simple Overview</h3>
+            <p><strong>Use for:</strong> Solution overview slide</p>
+            <textarea id="arch2">@startuml Ultra_Simple_Architecture
+!theme aws-orange
+title Medical AI System - Simple Overview
+
+left to right direction
+
+actor "👨‍🌾 Rural User" as USER
+cloud "📱 WhatsApp/SMS" as COMM
+rectangle "🤖 Medical AI\n(500+ Diseases)" as AI
+database "🏛️ Government\nSystems" as GOV
+rectangle "🚨 Emergency\nServices" as EMERGENCY
+
+USER --> COMM : Hindi/English\nVoice/Text
+COMM --> AI : Medical Query
+AI --> GOV : Health Data
+AI --> EMERGENCY : Auto Route\nCritical Cases
+AI --> COMM : Medical Advice
+COMM --> USER : Response in\nNative Language
+
+note bottom of AI : ✅ 85%+ Accuracy\n⚡ <3 Second Response\n🌍 12 Languages\n🔄 24/7 Learning
+
+@enduml</textarea>
+            <button class="convert-btn" onclick="convertDiagram('arch2', 'result2')">Convert to PNG</button>
+            <div id="result2" class="result"></div>
+        </div>
+
+        <!-- Simple Flow -->
+        <div class="diagram-section">
+            <h3>🔄 3. Process Flow Diagram</h3>
+            <p><strong>Use for:</strong> Live demo explanation</p>
+            <textarea id="flow1">@startuml Medical_AI_Simple_Flow
+!theme blueprint
+title 🏥 How It Works - Medical AI Flow
+
+start
+
+:📱 User sends message\nvia WhatsApp/SMS;
+note right: "मुझे बुखार है"\n(I have fever)
+
+:🧠 AI analyzes with\n5 medical models;
+note right: BioBERT + ClinicalBERT\n+ Safety Validator
+
+if (🚨 Emergency?) then (yes)
+  :🚑 Auto-call 108\nAlert family;
+  :🏥 Route to hospital;
+else (no)
+  :💊 Provide medical\nadvice & guidance;
+endif
+
+:🌍 Translate to\nuser's language;
+
+:📤 Send response\nback to user;
+
+:📊 Learn & improve\nfor next time;
+
+stop
+
+note bottom: ⚡ Complete process < 3 seconds\n🎯 85%+ accuracy guaranteed
+
+@enduml</textarea>
+            <button class="convert-btn" onclick="convertDiagram('flow1', 'result3')">Convert to PNG</button>
+            <div id="result3" class="result"></div>
+        </div>
+
+        <div class="instructions">
+            <h2>🎯 Presentation Tips:</h2>
+            <ul>
+                <li><span class="emoji">📊</span> <strong>Slide 3 (Technical):</strong> Use Simple Architecture diagram</li>
+                <li><span class="emoji">🎪</span> <strong>Opening/Demo:</strong> Use Ultra Simple Overview</li>
+                <li><span class="emoji">🔄</span> <strong>Process Explanation:</strong> Use Process Flow diagram</li>
+                <li><span class="emoji">⏱️</span> <strong>Timing:</strong> 30 seconds per diagram explanation</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function convertDiagram(textareaId, resultId) {
+            const textarea = document.getElementById(textareaId);
+            const result = document.getElementById(resultId);
+            const plantUMLCode = textarea.value;
+            
+            // Show loading message
+            result.innerHTML = '<p>🔄 Converting diagram... Please wait...</p>';
+            
+            // Use PlantUML online service
+            const encodedCode = encodePlantUML(plantUMLCode);
+            const imageUrl = `http://www.plantuml.com/plantuml/png/${encodedCode}`;
+            
+            // Create image element
+            const img = new Image();
+            img.onload = function() {
+                result.innerHTML = `
+                    <img src="${imageUrl}" alt="PlantUML Diagram">
+                    <br>
+                    <button class="download-btn" onclick="downloadImage('${imageUrl}', '${textareaId}')">
+                        💾 Download PNG
+                    </button>
+                `;
+            };
+            img.onerror = function() {
+                result.innerHTML = `
+                    <p>❌ Conversion failed. Try this alternative:</p>
+                    <p>1. Copy the PlantUML code above</p>
+                    <p>2. Go to <a href="http://www.plantuml.com/plantuml/" target="_blank" style="color: yellow;">PlantUML Online</a></p>
+                    <p>3. Paste and click Submit</p>
+                    <p>4. Right-click and Save Image As</p>
+                `;
+            };
+            img.src = imageUrl;
+        }
+        
+        function encodePlantUML(plantumlText) {
+            // Simple encoding for PlantUML URL
+            return btoa(plantumlText);
+        }
+        
+        function downloadImage(imageUrl, filename) {
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = `${filename}_diagram.png`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

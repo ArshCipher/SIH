@@ -1,5 +1,6 @@
 """
 Competition-Grade Medical Safety and Compliance System
+Enhanced with 500+ disease database validation and Indian medical context
 Bulletproof safety validation with regulatory compliance
 """
 
@@ -13,6 +14,17 @@ import re
 from datetime import datetime, timedelta
 import hashlib
 import uuid
+import sqlite3
+
+# Enhanced imports for disease database integration
+try:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from enhanced_medical_retriever import EnhancedMedicalKnowledgeRetriever
+    ENHANCED_RETRIEVER_AVAILABLE = True
+except ImportError:
+    ENHANCED_RETRIEVER_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -506,19 +518,30 @@ class ComplianceValidator:
         return recommendations
 
 class MedicalSafetyValidator:
-    """Comprehensive medical safety validation system"""
+    """Comprehensive medical safety validation system with enhanced disease database integration"""
     
-    def __init__(self):
+    def __init__(self, db_path: str = "health_chatbot.db"):
         self.hallucination_detector = MedicalHallucinationDetector()
         self.bias_detector = MedicalBiasDetector()
         self.compliance_validator = ComplianceValidator()
+        self.db_path = db_path
+        
+        # Initialize enhanced retriever for fact checking
+        self.enhanced_retriever = None
+        if ENHANCED_RETRIEVER_AVAILABLE:
+            try:
+                self.enhanced_retriever = EnhancedMedicalKnowledgeRetriever(db_path)
+                logger.info("Enhanced retriever initialized for safety validation")
+            except Exception as e:
+                logger.warning(f"Failed to initialize enhanced retriever for safety: {e}")
         
         # Safety thresholds
         self.safety_thresholds = {
             "hallucination_tolerance": 0.0,  # Zero tolerance for hallucinations
             "bias_threshold": 0.3,
             "compliance_threshold": 0.8,
-            "overall_safety_threshold": 0.8
+            "overall_safety_threshold": 0.8,
+            "disease_accuracy_threshold": 0.7  # New threshold for disease information accuracy
         }
         
         # Emergency escalation patterns
@@ -585,7 +608,23 @@ class MedicalSafetyValidator:
             )
             safety_flags.append(flag)
         
-        # Step 4: Emergency detection
+        # Step 4: Disease information validation (new)
+        disease_accuracy_valid = await self._validate_disease_accuracy(text, context)
+        
+        if not disease_accuracy_valid:
+            flag = SafetyFlag(
+                flag_id=str(uuid.uuid4()),
+                flag_type="disease_accuracy",
+                severity=SafetyLevel.WARNING,
+                description="Disease information accuracy concerns detected",
+                evidence="Information inconsistent with verified medical database",
+                recommendation="Cross-check with authoritative medical sources",
+                compliance_issues=[ComplianceStandard.MEDICAL_ETHICS],
+                timestamp=datetime.utcnow()
+            )
+            safety_flags.append(flag)
+        
+        # Step 5: Emergency detection
         emergency_escalation_required = await self._check_emergency_escalation(text)
         
         if emergency_escalation_required:
@@ -836,3 +875,106 @@ class EmergencyEscalationProtocol:
         # In production, this would integrate with monitoring systems
         # like PagerDuty, Slack, or custom alerting
         logger.critical(f"EMERGENCY NOTIFICATION: Session {safety_result.session_id} requires immediate attention")
+    
+    async def _validate_disease_accuracy(self, text: str, context: Dict[str, Any]) -> bool:
+        """Validate disease information accuracy against comprehensive database"""
+        try:
+            if not self.enhanced_retriever:
+                return True  # Skip validation if enhanced retriever not available
+            
+            # Extract potential disease names from text
+            disease_mentions = self._extract_disease_mentions(text)
+            
+            if not disease_mentions:
+                return True  # No diseases mentioned, validation passes
+            
+            # Check each disease mention against database
+            for disease_name in disease_mentions:
+                disease_info = self.enhanced_retriever.get_disease_by_name(disease_name)
+                
+                if disease_info:
+                    # Validate symptoms mentioned in text against known symptoms
+                    text_lower = text.lower()
+                    known_symptoms = disease_info.symptoms.lower()
+                    
+                    # Check for contradictory information
+                    if self._check_contradictory_symptoms(text_lower, known_symptoms):
+                        logger.warning(f"Contradictory symptoms detected for {disease_name}")
+                        return False
+                    
+                    # Check severity claims
+                    if self._check_severity_consistency(text_lower, disease_info.severity):
+                        continue
+                    else:
+                        logger.warning(f"Inconsistent severity information for {disease_name}")
+                        return False
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error in disease accuracy validation: {e}")
+            return True  # Default to pass on error to avoid blocking legitimate responses
+    
+    def _extract_disease_mentions(self, text: str) -> List[str]:
+        """Extract potential disease names from text"""
+        # Simple extraction - can be enhanced with NER
+        disease_patterns = [
+            r'\b(?:covid|coronavirus|tuberculosis|malaria|dengue|diabetes|hypertension|asthma|pneumonia|cancer|stroke)\b',
+            r'\b(?:fever|cough|headache|nausea|vomiting)\s+(?:symptoms?|signs?)\b'
+        ]
+        
+        mentions = []
+        text_lower = text.lower()
+        
+        for pattern in disease_patterns:
+            matches = re.findall(pattern, text_lower, re.IGNORECASE)
+            mentions.extend(matches)
+        
+        return list(set(mentions))
+    
+    def _check_contradictory_symptoms(self, text: str, known_symptoms: str) -> bool:
+        """Check for contradictory symptom information"""
+        # Look for explicit contradictions
+        contradiction_patterns = [
+            r'not\s+(?:a\s+)?symptom',
+            r'does\s+not\s+cause',
+            r'never\s+causes?',
+            r'impossible\s+to\s+have'
+        ]
+        
+        for pattern in contradiction_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return True
+        
+        return False
+    
+    def _check_severity_consistency(self, text: str, known_severity: str) -> bool:
+        """Check if severity claims are consistent with known severity"""
+        severity_indicators = {
+            'mild': ['mild', 'minor', 'slight', 'not serious'],
+            'moderate': ['moderate', 'medium', 'manageable'],
+            'high': ['severe', 'serious', 'dangerous', 'critical'],
+            'critical': ['critical', 'life-threatening', 'fatal', 'deadly']
+        }
+        
+        text_severity_level = None
+        for level, indicators in severity_indicators.items():
+            if any(indicator in text for indicator in indicators):
+                text_severity_level = level
+                break
+        
+        if text_severity_level and text_severity_level != known_severity:
+            # Allow some flexibility in severity description
+            severity_hierarchy = ['mild', 'moderate', 'high', 'critical']
+            text_idx = severity_hierarchy.index(text_severity_level) if text_severity_level in severity_hierarchy else -1
+            known_idx = severity_hierarchy.index(known_severity) if known_severity in severity_hierarchy else -1
+            
+            # Allow within 1 level difference
+            if abs(text_idx - known_idx) > 1:
+                return False
+        
+        return True
+
+
+# Global safety validator instance
+enhanced_safety_validator = MedicalSafetyValidator()

@@ -36,8 +36,15 @@
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
             padding: 20px;
-            text-align: center;
             border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content {
+            text-align: center;
+            flex: 1;
         }
 
         .chat-header h1 {
@@ -48,6 +55,22 @@
         .chat-header p {
             opacity: 0.9;
             font-size: 14px;
+        }
+
+        .language-selector {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 8px 15px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .language-selector option {
+            background: #4facfe;
+            color: white;
         }
 
         .chat-messages {
@@ -242,14 +265,38 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>🏥 Medical AI Assistant</h1>
-            <p>Advanced medical chatbot with BioBERT, ClinicalBERT & PubMedBERT</p>
+            <div class="header-content">
+                <h1>🏥 Medical AI Assistant</h1>
+                <p>Advanced medical chatbot with 102+ diseases, multilingual support & real-time APIs</p>
+            </div>
+            <select class="language-selector" id="languageSelector">
+                <option value="en">🇬🇧 English</option>
+                <option value="hi">🇮🇳 हिंदी</option>
+                <option value="bn">🇧🇩 বাংলা</option>
+                <option value="ta">🇮🇳 தமிழ்</option>
+                <option value="te">🇮🇳 తెలుగు</option>
+                <option value="mr">🇮🇳 मराठी</option>
+                <option value="gu">🇮🇳 ગુજરાતી</option>
+                <option value="kn">🇮🇳 ಕನ್ನಡ</option>
+                <option value="ml">🇮🇳 മലയാളം</option>
+                <option value="pa">🇮🇳 ਪੰਜਾਬੀ</option>
+                <option value="or">🇮🇳 ଓଡ଼ିଆ</option>
+            </select>
         </div>
         
         <div class="chat-messages" id="chatMessages">
             <div class="welcome-message">
-                <h3>👋 Welcome to your Medical AI Assistant!</h3>
-                <p>Ask me about symptoms, diseases, treatments, or any medical questions.</p>
+                <h3>👋 Welcome to your Advanced Medical AI Assistant!</h3>
+                <p>🎯 <strong>New Features:</strong></p>
+                <ul style="text-align: left; margin: 10px 0; padding-left: 20px;">
+                    <li>🗄️ <strong>102+ Diseases Database</strong> - ICD-10 classified with India-specific conditions</li>
+                    <li>🧠 <strong>Multi-AI Models</strong> - BioBERT, ClinicalBERT, PubMedBERT ensemble</li>
+                    <li>🌐 <strong>11 Languages</strong> - Hindi, Bengali, Tamil, Telugu & more</li>
+                    <li>📊 <strong>Confidence Scores</strong> - AI reliability indicators</li>
+                    <li>⚠️ <strong>Risk Assessment</strong> - Emergency detection & triage</li>
+                    <li>🔗 <strong>Live Medical APIs</strong> - FDA, RxNorm, MeSH integration</li>
+                </ul>
+                <p><strong>Try asking:</strong> "मुझे बुखार है" or "What are diabetes symptoms?" or "I have chest pain"</p>
                 <div class="warning">
                     ⚠️ This AI provides educational information only. Always consult healthcare professionals for medical advice.
                 </div>
@@ -288,9 +335,12 @@
                 this.sendButton = document.getElementById('sendButton');
                 this.chatForm = document.getElementById('chatForm');
                 this.typingIndicator = document.getElementById('typingIndicator');
+                this.languageSelector = document.getElementById('languageSelector');
+                this.currentLanguage = 'en';
                 
                 this.initializeEventListeners();
                 this.messageInput.focus();
+                this.updatePlaceholderText();
             }
             
             initializeEventListeners() {
@@ -301,6 +351,31 @@
                         this.handleSubmit(e);
                     }
                 });
+                
+                // Language change handler
+                this.languageSelector.addEventListener('change', (e) => {
+                    this.currentLanguage = e.target.value;
+                    this.updatePlaceholderText();
+                    this.addMessage(`Language changed to ${e.target.options[e.target.selectedIndex].text}`, 'bot');
+                });
+            }
+            
+            updatePlaceholderText() {
+                const placeholders = {
+                    'en': 'Ask about symptoms, diseases, treatments...',
+                    'hi': 'लक्षण, बीमारी, इलाज के बारे में पूछें...',
+                    'bn': 'লক্ষণ, রোগ, চিকিৎসা সম্পর্কে জিজ্ঞাসা করুন...',
+                    'ta': 'அறிகுறிகள், நோய்கள், சிகிச்சைகள் பற்றி கேளுங்கள்...',
+                    'te': 'లక్షణాలు, వ్యాధులు, చికిత్సల గురించి అడగండి...',
+                    'mr': 'लक्षणे, रोग, उपचार याबद्दल विचारा...',
+                    'gu': 'લક્ષણો, રોગો, સારવાર વિશે પૂછો...',
+                    'kn': 'ಲಕ್ಷಣಗಳು, ರೋಗಗಳು, ಚಿಕಿತ್ಸೆಗಳ ಬಗ್ಗೆ ಕೇಳಿ...',
+                    'ml': 'രോഗലക്ഷണങ്ങൾ, രോഗങ്ങൾ, ചികിത്സകൾ എന്നിവയെക്കുറിച്ച് ചോദിക്കുക...',
+                    'pa': 'ਲੱਛਣ, ਬਿਮਾਰੀਆਂ, ਇਲਾਜ ਬਾਰੇ ਪੁੱਛੋ...',
+                    'or': 'ଲକ୍ଷଣ, ରୋଗ, ଚିକିତ୍ସା ବିଷୟରେ ପଚାରନ୍ତୁ...'
+                };
+                
+                this.messageInput.placeholder = placeholders[this.currentLanguage] || placeholders['en'];
             }
             
             async handleSubmit(e) {
@@ -328,29 +403,77 @@
             }
             
             async sendToBackend(message) {
-                // Try multiple endpoints for compatibility
+                // Try medical orchestrator first for enhanced responses
                 const endpoints = [
-                    '/chat',
-                    '/api/chat',
-                    '/medical/chat'
+                    '/medical/answer',  // Enhanced medical orchestrator
+                    '/chat',           // Fallback to basic chat
+                    '/api/chat'        // Alternative fallback
                 ];
                 
                 for (const endpoint of endpoints) {
                     try {
+                        let requestBody;
+                        
+                        if (endpoint === '/medical/answer') {
+                            // Enhanced medical orchestrator format
+                            requestBody = {
+                                text: message,
+                                user_id: 'temp_user_' + Date.now(),
+                                language: this.currentLanguage || 'en',
+                                country: 'IN'
+                            };
+                        } else {
+                            // Basic chat format
+                            requestBody = {
+                                message: message,
+                                user_id: 'temp_user_' + Date.now(),
+                                language: this.currentLanguage || 'en',
+                                platform: 'web'
+                            };
+                        }
+                        
                         const response = await fetch(`http://localhost:8000${endpoint}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({
-                                message: message,
-                                user_id: 'temp_user_' + Date.now()
-                            })
+                            body: JSON.stringify(requestBody)
                         });
                         
                         if (response.ok) {
                             const data = await response.json();
-                            return data.response || data.message || 'Response received successfully.';
+                            
+                            if (endpoint === '/medical/answer' && data.response) {
+                                // Enhanced medical response with metadata
+                                let enhancedResponse = data.response;
+                                
+                                // Add confidence and risk level info
+                                if (data.confidence !== undefined || data.risk_level) {
+                                    enhancedResponse += `\n\n📊 **Medical Analysis:**`;
+                                    if (data.confidence !== undefined) {
+                                        enhancedResponse += `\n• Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+                                    }
+                                    if (data.risk_level) {
+                                        enhancedResponse += `\n• Risk Level: ${data.risk_level.toUpperCase()}`;
+                                    }
+                                    if (data.safety_validated) {
+                                        enhancedResponse += `\n• ✅ Safety Validated`;
+                                    }
+                                    if (data.human_escalation_required) {
+                                        enhancedResponse += `\n• ⚠️ **Seek immediate medical attention**`;
+                                    }
+                                }
+                                
+                                // Add disclaimer
+                                if (data.disclaimer) {
+                                    enhancedResponse += `\n\n${data.disclaimer}`;
+                                }
+                                
+                                return enhancedResponse;
+                            } else {
+                                // Basic response
+                                return data.response || data.message || 'Response received successfully.';
+                            }
                         }
                     } catch (error) {
                         continue; // Try next endpoint

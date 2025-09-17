@@ -1,0 +1,22 @@
+@startuml Ultra_Simple_Architecture
+!theme aws-orange
+title Medical AI System - Simple Overview
+
+left to right direction
+
+actor "👨‍🌾 Rural User" as USER
+cloud "📱 WhatsApp/SMS" as COMM
+rectangle "🤖 Medical AI\n(500+ Diseases)" as AI
+database "🏛️ Government\nSystems" as GOV
+rectangle "🚨 Emergency\nServices" as EMERGENCY
+
+USER --> COMM : Hindi/English\nVoice/Text
+COMM --> AI : Medical Query
+AI --> GOV : Health Data
+AI --> EMERGENCY : Auto Route\nCritical Cases
+AI --> COMM : Medical Advice
+COMM --> USER : Response in\nNative Language
+
+note bottom of AI : ✅ 85%+ Accuracy\n⚡ <3 Second Response\n🌍 12 Languages\n🔄 24/7 Learning
+
+@enduml

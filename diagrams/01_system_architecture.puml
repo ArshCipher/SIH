@@ -1,0 +1,87 @@
+@startuml SIH_Medical_AI_Architecture
+!theme aws-orange
+title Medical AI System Architecture - SIH 2025
+
+package "User Interfaces" {
+  [WhatsApp Business API] as WA
+  [SMS Gateway (Twilio)] as SMS
+  [Web Dashboard] as WEB
+  [Mobile App] as MOBILE
+}
+
+package "API Gateway Layer" {
+  [FastAPI Gateway] as API
+  [Load Balancer] as LB
+  [Rate Limiter] as RL
+}
+
+package "Medical AI Orchestrator" {
+  [BioBERT Agent] as BERT1
+  [ClinicalBERT Agent] as BERT2
+  [PubMedBERT Agent] as BERT3
+  [Medical NER Agent] as NER
+  [Safety Validator] as SAFETY
+  [Consensus Engine] as CONSENSUS
+}
+
+package "Core Services" {
+  [Translation Service] as TRANS
+  [Medical Knowledge Base] as KB
+  [Emergency Detection] as EMERGENCY
+  [Analytics Engine] as ANALYTICS
+}
+
+package "Data Layer" {
+  database "PostgreSQL" as DB
+  database "ChromaDB (Vectors)" as VECTOR
+  database "Redis Cache" as CACHE
+}
+
+package "External Integration" {
+  [Government Health APIs] as GOV
+  [Emergency Services (108)] as EMR
+  [Hospital Integration] as HOSPITAL
+}
+
+' User Interface Connections
+WA --> LB : WhatsApp Messages
+SMS --> LB : SMS Queries  
+WEB --> LB : Web Requests
+MOBILE --> LB : Mobile Queries
+
+' Gateway Layer
+LB --> RL : Load Distribution
+RL --> API : Rate Limited Requests
+
+' AI Orchestrator
+API --> CONSENSUS : Medical Query
+CONSENSUS --> BERT1 : Parallel Processing
+CONSENSUS --> BERT2 : Parallel Processing  
+CONSENSUS --> BERT3 : Parallel Processing
+CONSENSUS --> NER : Entity Extraction
+CONSENSUS --> SAFETY : Safety Validation
+
+' Core Services
+API --> TRANS : Language Translation
+API --> KB : Knowledge Retrieval
+API --> EMERGENCY : Emergency Detection
+API --> ANALYTICS : Performance Tracking
+
+' Data Connections
+CONSENSUS --> VECTOR : Vector Search
+KB --> DB : Medical Data
+TRANS --> CACHE : Translation Cache
+ANALYTICS --> DB : Metrics Storage
+
+' External Integrations
+EMERGENCY --> EMR : Emergency Routing
+API --> GOV : Health Data Sync
+API --> HOSPITAL : Referral System
+
+note right of CONSENSUS : Multi-Agent Consensus\nwith 85%+ Accuracy
+
+note bottom of VECTOR : 500+ Disease\nKnowledge Base
+
+note left of TRANS : 12 Indian Languages\nReal-time Translation
+
+@enduml

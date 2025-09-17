@@ -1,0 +1,64 @@
+@startuml Government_Integration
+!theme aws-orange
+title Government Health Ecosystem Integration
+
+package "Medical AI System" {
+  [Medical AI Core] as AI_CORE
+  [Emergency Detection] as EMERGENCY
+  [Analytics Engine] as ANALYTICS
+  [Outbreak Monitoring] as OUTBREAK
+}
+
+package "Ayushman Bharat Digital Mission (ABDM)" {
+  [Health ID Registry] as HEALTH_ID
+  [Healthcare Providers Registry] as HRP
+  [Health Information Exchange] as HIE
+  [Consent Manager] as CONSENT
+}
+
+package "Government Health Systems" {
+  [ICMR Database] as ICMR
+  [National Health Portal] as NHP
+  [Drug Controller] as DRUG
+  [Emergency Services (108)] as ES_108
+}
+
+package "State Health Departments" {
+  [State Health Database] as STATE_DB
+  [District Hospitals] as DISTRICT
+  [Primary Health Centers] as PHC
+  [ASHA Workers] as ASHA
+}
+
+package "International Organizations" {
+  [WHO Disease Surveillance] as WHO
+  [CDC Health Alerts] as CDC
+  [UNICEF Vaccination] as UNICEF
+}
+
+' Core Integrations
+AI_CORE <--> HEALTH_ID : Patient identification
+AI_CORE <--> HIE : Health record access
+AI_CORE --> CONSENT : Privacy compliance
+
+EMERGENCY --> ES_108 : Automatic routing
+EMERGENCY --> DISTRICT : Hospital alerts
+EMERGENCY --> PHC : Local referrals
+
+OUTBREAK --> ICMR : Disease reporting
+OUTBREAK --> STATE_DB : Regional alerts
+OUTBREAK --> WHO : Global surveillance
+
+ANALYTICS --> NHP : Population insights
+ANALYTICS --> DRUG : Medication trends
+ANALYTICS --> ASHA : Community health data
+
+' External Connections
+OUTBREAK --> CDC : International alerts
+AI_CORE --> UNICEF : Vaccination coordination
+
+note right of AI_CORE : Real-time integration\nwith government systems
+
+note bottom of OUTBREAK : Early warning system\nfor epidemic prevention
+
+@enduml

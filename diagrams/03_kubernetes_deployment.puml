@@ -1,0 +1,87 @@
+@startuml Kubernetes_Deployment
+!theme blueprint
+title Production Deployment Architecture - Kubernetes
+
+package "Load Balancer" {
+  [Nginx Ingress] as NGINX
+}
+
+package "Kubernetes Cluster" {
+  
+  package "API Tier" {
+    [FastAPI Pod 1] as API1
+    [FastAPI Pod 2] as API2
+    [FastAPI Pod 3] as API3
+  }
+  
+  package "AI Processing Tier" {
+    [Medical AI Pod 1] as AI1
+    [Medical AI Pod 2] as AI2
+    [Medical AI Pod 3] as AI3
+  }
+  
+  package "Service Tier" {
+    [Translation Service] as TRANS
+    [Analytics Service] as ANALYTICS
+    [Emergency Service] as EMERGENCY
+  }
+  
+  package "Data Tier" {
+    [PostgreSQL Master] as DB_MASTER
+    [PostgreSQL Replica] as DB_REPLICA
+    [Redis Cluster] as REDIS
+    [ChromaDB] as CHROMA
+  }
+}
+
+package "External Services" {
+  [WhatsApp Business API] as WHATSAPP
+  [Twilio SMS] as TWILIO
+  [Government APIs] as GOV_API
+  [Emergency Services] as EMERGENCY_EXT
+}
+
+package "Monitoring" {
+  [Prometheus] as PROMETHEUS
+  [Grafana Dashboard] as GRAFANA
+  [Alertmanager] as ALERTS
+}
+
+' Traffic Flow
+WHATSAPP --> NGINX : User Queries
+TWILIO --> NGINX : SMS Queries
+NGINX --> API1 : Load Balanced
+NGINX --> API2 : Load Balanced  
+NGINX --> API3 : Load Balanced
+
+API1 --> AI1 : Medical Processing
+API2 --> AI2 : Medical Processing
+API3 --> AI3 : Medical Processing
+
+AI1 --> TRANS : Translation
+AI2 --> ANALYTICS : Metrics
+AI3 --> EMERGENCY : Emergency Detection
+
+' Data Connections
+API1 --> DB_MASTER : Write Operations
+API2 --> DB_REPLICA : Read Operations
+API3 --> REDIS : Caching
+AI1 --> CHROMA : Vector Search
+
+' External Integrations
+EMERGENCY --> EMERGENCY_EXT : Emergency Routing
+API1 --> GOV_API : Health Data
+
+' Monitoring
+API1 --> PROMETHEUS : Metrics
+AI1 --> PROMETHEUS : AI Metrics
+PROMETHEUS --> GRAFANA : Visualization
+PROMETHEUS --> ALERTS : Alert Rules
+
+note right of NGINX : Handles 1M+\nConcurrent Users
+
+note bottom of AI1 : Auto-scaling based\non CPU/Memory usage
+
+note left of DB_MASTER : High Availability\nwith automatic failover
+
+@enduml

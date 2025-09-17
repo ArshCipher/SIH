@@ -1,0 +1,68 @@
+@startuml Medical_AI_Processing_Flow
+!theme amiga
+title Multi-Agent Medical AI Processing Flow
+
+start
+
+:User Query Received;
+note right: Via WhatsApp/SMS/Web
+
+:Language Detection;
+if (Non-English?) then (yes)
+  :Translate to English;
+else (no)
+endif
+
+:Query Preprocessing;
+note right: NLP, Entity Extraction
+
+fork
+  :BioBERT Analysis;
+  :Generate Response 1;
+fork again
+  :ClinicalBERT Analysis;  
+  :Generate Response 2;
+fork again
+  :PubMedBERT Analysis;
+  :Generate Response 3;
+fork again
+  :Medical NER Processing;
+  :Extract Medical Entities;
+fork again
+  :Safety Validation;
+  :Check for Harmful Content;
+end fork
+
+:Consensus Engine;
+note right: Aggregate all agent responses\nCalculate confidence scores
+
+if (Emergency Detected?) then (yes)
+  :Trigger Emergency Protocol;
+  :Route to Emergency Services;
+  :Notify Family/Contacts;
+else (no)
+endif
+
+if (Confidence > 85%?) then (yes)
+  :Generate Final Response;
+else (no)
+  :Request Human Review;
+  :Route to Medical Professional;
+endif
+
+if (Original Language != English?) then (yes)
+  :Translate Response;
+else (no)
+endif
+
+:Send Response to User;
+
+:Log Interaction;
+:Update Analytics;
+:Trigger Continuous Learning;
+
+stop
+
+note bottom: All processing < 3 seconds\n24/7 Quality Monitoring
+
+@enduml

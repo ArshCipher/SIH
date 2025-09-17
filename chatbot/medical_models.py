@@ -366,7 +366,7 @@ class MedicalModelEnsemble:
                     logits = outputs.logits
                     probabilities = torch.softmax(logits, dim=-1)
                     predicted_class = torch.argmax(probabilities, dim=-1)
-                    confidence = float(torch.max(probabilities))
+                    confidence = float(torch.max(probabilities).detach())
                     
                     # Map to medical categories
                     prediction = self._map_classification_result(predicted_class.item(), confidence)

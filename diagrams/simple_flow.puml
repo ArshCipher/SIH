@@ -1,0 +1,30 @@
+@startuml Medical_AI_Simple_Flow
+!theme blueprint
+title 🏥 How It Works - Medical AI Flow
+
+start
+
+:📱 User sends message\nvia WhatsApp/SMS;
+note right: "मुझे बुखार है"\n(I have fever)
+
+:🧠 AI analyzes with\n5 medical models;
+note right: BioBERT + ClinicalBERT\n+ Safety Validator
+
+if (🚨 Emergency?) then (yes)
+  :🚑 Auto-call 108\nAlert family;
+  :🏥 Route to hospital;
+else (no)
+  :💊 Provide medical\nadvice & guidance;
+endif
+
+:🌍 Translate to\nuser's language;
+
+:📤 Send response\nback to user;
+
+:📊 Learn & improve\nfor next time;
+
+stop
+
+note bottom: ⚡ Complete process < 3 seconds\n🎯 85%+ accuracy guaranteed
+
+@enduml

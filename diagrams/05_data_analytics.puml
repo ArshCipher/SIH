@@ -1,0 +1,69 @@
+@startuml Data_Analytics_Flow
+!theme mars
+title Real-time Analytics and Continuous Learning
+
+package "Data Collection" {
+  [User Interactions] as INTERACTIONS
+  [Medical Queries] as QUERIES  
+  [AI Responses] as RESPONSES
+  [Performance Metrics] as METRICS
+}
+
+package "Processing Pipeline" {
+  [Stream Processing] as STREAM
+  [ETL Pipeline] as ETL
+  [Data Validation] as VALIDATION
+  [Anonymization] as ANON
+}
+
+package "Analytics Engine" {
+  [Real-time Dashboard] as DASHBOARD
+  [Performance Analysis] as PERF
+  [Medical Accuracy Tracking] as ACCURACY
+  [User Behavior Analysis] as BEHAVIOR
+}
+
+package "Machine Learning" {
+  [Model Training] as TRAINING
+  [A/B Testing] as AB_TEST
+  [Continuous Learning] as LEARNING
+  [Model Validation] as MODEL_VAL
+}
+
+package "Insights & Actions" {
+  [Government Reports] as GOV_REPORTS
+  [Health Alerts] as ALERTS
+  [System Improvements] as IMPROVEMENTS
+  [Population Health Insights] as INSIGHTS
+}
+
+' Data Flow
+INTERACTIONS --> STREAM : Real-time events
+QUERIES --> STREAM : Medical queries
+RESPONSES --> STREAM : AI responses  
+METRICS --> STREAM : Performance data
+
+STREAM --> ETL : Batch processing
+ETL --> VALIDATION : Data quality checks
+VALIDATION --> ANON : Privacy protection
+
+ANON --> DASHBOARD : Real-time visualization
+ANON --> PERF : Performance monitoring
+ANON --> ACCURACY : Medical validation
+ANON --> BEHAVIOR : Usage patterns
+
+ACCURACY --> TRAINING : Model improvement data
+BEHAVIOR --> AB_TEST : Feature testing
+TRAINING --> LEARNING : Updated models
+AB_TEST --> MODEL_VAL : Validation testing
+
+LEARNING --> IMPROVEMENTS : System updates
+PERF --> ALERTS : Health monitoring
+BEHAVIOR --> INSIGHTS : Population health
+INSIGHTS --> GOV_REPORTS : Policy insights
+
+note right of DASHBOARD : Live metrics for\n500+ medical scenarios
+
+note bottom of LEARNING : AI improves daily\nfrom real-world usage
+
+@enduml

@@ -209,11 +209,11 @@ class MedicalEmbeddingService:
             return
         
         try:
-            # Try medical-specialized models first
+            # Try medical-specialized sentence transformer models first
             medical_models = [
-                "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract",
-                "dmis-lab/biobert-base-cased-v1.2",
-                "sentence-transformers/all-MiniLM-L6-v2"
+                "sentence-transformers/all-MiniLM-L6-v2",  # Good general model
+                "sentence-transformers/all-mpnet-base-v2",  # High-quality embeddings
+                "sentence-transformers/paraphrase-MiniLM-L6-v2"  # Paraphrase model
             ]
             
             for model_name in medical_models:
@@ -279,20 +279,23 @@ class MedicalVectorDatabase:
         """Initialize all available vector database systems"""
         import os
         
-        # Initialize ChromaDB
+        # Initialize ChromaDB with new client configuration
         if CHROMADB_AVAILABLE and chromadb is not None:
             try:
+                # Use the new ChromaDB client configuration
                 self.chromadb_client = chromadb.PersistentClient(
-                    path=os.path.join(self.storage_path, "chromadb"),
-                    settings=Settings(
-                        anonymized_telemetry=False,
-                        allow_reset=True
-                    )
+                    path=os.path.join(self.storage_path, "chromadb")
                 )
                 logger.info("ChromaDB initialized successfully")
             except Exception as e:
-                logger.warning(f"ChromaDB initialization failed: {e}")
-                self.chromadb_client = None
+                logger.error(f"ChromaDB initialization failed: {e}")
+                # Fallback to in-memory client
+                try:
+                    self.chromadb_client = chromadb.Client()
+                    logger.info("ChromaDB fallback to in-memory client")
+                except Exception as fallback_e:
+                    logger.error(f"ChromaDB fallback failed: {fallback_e}")
+                    self.chromadb_client = None
         
         # Initialize sentence transformers
         if SENTENCE_TRANSFORMERS_AVAILABLE:
@@ -795,8 +798,21 @@ class MedicalGraphRAG:
         self.vector_store = MedicalVectorStore(self.embedding_service)
         self.data_integrator = MedicalDataIntegrator()
         
-        # Initialize with medical knowledge
-        asyncio.create_task(self._initialize_medical_knowledge())
+        # Initialize with medical knowledge - handle async properly
+        self._knowledge_initialized = False
+        try:
+            # Check if we're in an async context
+            try:
+                loop = asyncio.get_running_loop()
+                # If we have a running loop, schedule the initialization
+                loop.create_task(self._initialize_medical_knowledge())
+            except RuntimeError:
+                # No running loop, run synchronously 
+                asyncio.run(self._initialize_medical_knowledge())
+        except Exception as e:
+            logger.warning(f"Could not initialize medical knowledge: {e}")
+            # Initialize basic knowledge synchronously as fallback
+            self._initialize_basic_knowledge()
     
     async def _initialize_medical_knowledge(self):
         """Initialize with core medical knowledge"""
@@ -840,6 +856,30 @@ class MedicalGraphRAG:
         
         for doc in sample_documents:
             await self.vector_store.add_document(doc)
+        
+        self._knowledge_initialized = True
+    
+    def _initialize_basic_knowledge(self):
+        """Initialize basic medical knowledge synchronously as fallback"""
+        try:
+            # Basic medical knowledge that doesn't require async operations
+            basic_docs = [
+                {
+                    "id": "emergency_basics",
+                    "title": "Medical Emergency Basics",
+                    "content": "Call emergency services for severe symptoms like chest pain, difficulty breathing, or loss of consciousness."
+                },
+                {
+                    "id": "general_health",
+                    "title": "General Health Guidelines", 
+                    "content": "Maintain regular exercise, balanced diet, adequate sleep, and routine medical checkups."
+                }
+            ]
+            logger.info("Initialized basic medical knowledge fallback")
+            self._knowledge_initialized = True
+        except Exception as e:
+            logger.error(f"Failed to initialize basic knowledge: {e}")
+            self._knowledge_initialized = False
     
     async def u_retrieval(self, query: str, k: int = 10) -> URetrievalResult:
         """

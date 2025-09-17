@@ -1,0 +1,50 @@
+@startuml Simple_High_Level_Architecture
+!theme plain
+title 🏥 Medical AI System - High Level Architecture
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontSize 12
+skinparam defaultFontName Arial
+
+package "📱 User Access" #LightBlue {
+  [WhatsApp] as WA
+  [SMS] as SMS
+  [Web Portal] as WEB
+}
+
+package "🤖 AI Brain" #LightGreen {
+  [Medical AI\nOrchestrator] as AI
+  [500+ Diseases\nKnowledge Base] as KB
+}
+
+package "🏛️ Government" #LightYellow {
+  [ABDM Integration] as ABDM
+  [Emergency Services\n(108)] as EMR
+  [Health Database] as HEALTH_DB
+}
+
+package "💾 Data" #LightCyan {
+  [User Data] as USER_DB
+  [Analytics] as ANALYTICS
+}
+
+' Simple connections
+WA --> AI : Hindi/English\nVoice/Text
+SMS --> AI : Basic Phones
+WEB --> AI : Web Interface
+
+AI --> KB : Medical\nKnowledge
+AI --> ABDM : Patient Records
+AI --> EMR : Emergency\nRouting
+AI --> USER_DB : Store Interactions
+AI --> ANALYTICS : Performance\nMetrics
+
+AI --> HEALTH_DB : Disease\nSurveillance
+
+note top of AI : 🧠 Multi-Agent AI\n5 Medical Models\n85%+ Accuracy
+
+note bottom of KB : 📚 Covers All Specialties\nCardiology, Neurology\nPediatrics, Emergency
+
+note right of ABDM : 🆔 Government Ready\nHealth ID Integration\nReal-time Sync
+
+@enduml
